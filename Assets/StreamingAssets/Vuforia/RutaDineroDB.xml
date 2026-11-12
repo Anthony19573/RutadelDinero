@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig>
+  <Tracking>
+    <ImageTarget name="cuentasfalsas" size="9.000000 5.023256" />
+    <ImageTarget name="casino" size="9.000000 5.023256" />
+    <ImageTarget name="casacambio" size="9.000000 5.023256" />
+    <ImageTarget name="bancocorresponsal" size="9.000000 5.023256" />
+    <ImageTarget name="bancoandino" size="9.000000 5.023256" />
+  </Tracking>
+</QCARConfig>
