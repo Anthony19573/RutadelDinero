@@ -217,7 +217,12 @@ public class ChallengeManager : MonoBehaviour
 
         if (seleccion == datos.opcionCorrecta)
         {
-            if (AudioManager.I != null) AudioManager.I.PlaySuccess();
+            if (AudioManager.I != null)
+            {
+                AudioManager.I.PlaySuccess();
+                Debug.Log($"[ChallengeManager] Respuesta correcta en parada {stopIndexActual}. Reproduciendo aciertoClip: {(AudioManager.I.aciertoClip != null ? AudioManager.I.aciertoClip.name : "NULL")}");
+                AudioManager.I.PlayNarrator(AudioManager.I.aciertoClip);
+            }
 
             if (UIManager.I != null)
             {

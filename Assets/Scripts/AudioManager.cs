@@ -5,12 +5,22 @@ public class AudioManager : MonoBehaviour
 {
     public static AudioManager I { get; private set; }
 
-    [Header("Clips de Audio")]
+    [Header("Clips de Efectos de Sonido (SFX)")]
     public AudioClip successClip;
     public AudioClip errorClip;
     public AudioClip defenseClip;
 
-    private AudioSource audioSource;
+    [Header("Fuente de Voz del Narrador")]
+    public AudioSource voiceSource;
+
+    [Header("Clips de Narración (Voz)")]
+    public AudioClip introClip;
+    public AudioClip aciertoClip;
+    public AudioClip defensaClip;
+    public AudioClip[] clipsParadas = new AudioClip[5];
+    public AudioClip[] clipsDefensaParadas = new AudioClip[5];
+
+    private AudioSource sfxSource;
 
     private void Awake()
     {
@@ -21,51 +31,108 @@ public class AudioManager : MonoBehaviour
         }
 
         I = this;
-        audioSource = GetComponent<AudioSource>();
 
-        if (audioSource != null)
+        AudioSource[] sources = GetComponents<AudioSource>();
+        sfxSource = sources.Length > 0 ? sources[0] : gameObject.AddComponent<AudioSource>();
+        sfxSource.playOnAwake = false;
+
+        if (voiceSource == null)
         {
-            audioSource.playOnAwake = false;
+            if (sources.Length > 1)
+            {
+                voiceSource = sources[1];
+            }
+            else
+            {
+                voiceSource = gameObject.AddComponent<AudioSource>();
+            }
         }
+
+        voiceSource.playOnAwake = false;
+        voiceSource.loop = false;
     }
 
     public void PlaySuccess()
     {
-        if (audioSource != null && successClip != null)
+        if (sfxSource != null && successClip != null)
         {
-            audioSource.PlayOneShot(successClip);
+            sfxSource.PlayOneShot(successClip);
         }
         Debug.Log("[AudioManager] Sonido de Éxito (Success) reproducido.");
     }
 
     public void PlayError()
     {
-        if (audioSource != null && errorClip != null)
+        if (sfxSource != null && errorClip != null)
         {
-            audioSource.PlayOneShot(errorClip);
+            sfxSource.PlayOneShot(errorClip);
         }
         Debug.Log("[AudioManager] Sonido de Error reproducido.");
     }
 
     public void PlayDefense()
     {
-        if (audioSource != null && defenseClip != null)
+        if (sfxSource != null && defenseClip != null)
         {
-            audioSource.PlayOneShot(defenseClip);
+            sfxSource.PlayOneShot(defenseClip);
         }
-        else if (audioSource != null && successClip != null)
+        else if (sfxSource != null && successClip != null)
         {
-            audioSource.PlayOneShot(successClip);
+            sfxSource.PlayOneShot(successClip);
         }
         Debug.Log("[AudioManager] Sonido de Alerta/Defensa reproducido.");
     }
 
+    public void PlayNarrator(AudioClip clip)
+    {
+        if (clip == null || voiceSource == null) return;
+
+        // Detener cualquier narración previa para evitar superposición de voces
+        voiceSource.Stop();
+        voiceSource.clip = clip;
+        voiceSource.Play();
+
+        Debug.Log($"[AudioManager][NARRADOR] Reproduciendo archivo: {clip.name}");
+    }
+
+    public void PlayParadaNarrator(int stopIndex)
+    {
+        if (clipsParadas != null && stopIndex >= 0 && stopIndex < clipsParadas.Length && clipsParadas[stopIndex] != null)
+        {
+            Debug.Log($"[AudioManager][PARADA {stopIndex}] Reproduciendo clip de parada: {clipsParadas[stopIndex].name}");
+            PlayNarrator(clipsParadas[stopIndex]);
+        }
+        else
+        {
+            Debug.LogWarning($"[AudioManager] No se encontró clip de narración para parada {stopIndex}.");
+        }
+    }
+
+    public float PlayDefensaParadaNarrator(int stopIndex)
+    {
+        if (clipsDefensaParadas != null && stopIndex >= 0 && stopIndex < clipsDefensaParadas.Length && clipsDefensaParadas[stopIndex] != null)
+        {
+            AudioClip clip = clipsDefensaParadas[stopIndex];
+            Debug.Log($"[AudioManager][DEFENSA PARADA {stopIndex}] Reproduciendo clip: {clip.name} ({clip.length:F2}s)");
+            PlayNarrator(clip);
+            return clip.length;
+        }
+
+        Debug.LogWarning($"[AudioManager] No se encontró clip de defensa para parada {stopIndex}.");
+        return 0f;
+    }
+
+    public void StopNarrator()
+    {
+        if (voiceSource != null && voiceSource.isPlaying)
+        {
+            voiceSource.Stop();
+            Debug.Log("[AudioManager] Narrador detenido.");
+        }
+    }
+
     public void PlayVoiceover(AudioClip clip)
     {
-        if (clip != null && audioSource != null)
-        {
-            audioSource.PlayOneShot(clip);
-            Debug.Log($"[AudioManager] Reproduciendo locución: {clip.name}");
-        }
+        PlayNarrator(clip);
     }
 }

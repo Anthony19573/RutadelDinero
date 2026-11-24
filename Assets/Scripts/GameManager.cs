@@ -65,6 +65,12 @@ public class GameManager : MonoBehaviour
         {
             UIManager.I.ActualizarTopHUD(modoActual, paradaActualEsperada, paradasResueltas.Count);
         }
+
+        // Al iniciar la escena (PanelIntro), reproducir la narración de introducción
+        if (AudioManager.I != null && AudioManager.I.introClip != null)
+        {
+            AudioManager.I.PlayNarrator(AudioManager.I.introClip);
+        }
     }
 
     public void CargarProgreso()
@@ -112,6 +118,19 @@ public class GameManager : MonoBehaviour
         if (UIManager.I != null)
         {
             UIManager.I.ActualizarTopHUD(modoActual, 0, 0);
+        }
+
+        // Reiniciar estado visual de todos los dioramas y banderas de voz de las paradas
+        ARVisualController[] visualControllers = FindObjectsByType<ARVisualController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var vc in visualControllers)
+        {
+            if (vc != null) vc.SetDefenseMode(false);
+        }
+
+        StopTarget[] stopTargets = FindObjectsByType<StopTarget>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var st in stopTargets)
+        {
+            if (st != null) st.ResetVozParada();
         }
 
         Debug.Log("[GameManager] Progreso reseteado a valores iniciales (Parada 0).");
@@ -189,6 +208,17 @@ public class GameManager : MonoBehaviour
         if (AudioManager.I != null)
         {
             AudioManager.I.PlayDefense();
+            AudioManager.I.PlayNarrator(AudioManager.I.defensaClip);
+        }
+
+        // Cambiar todos los dioramas 3D (ARVisualController) de luz roja de alerta a verde defensivo + escudo
+        ARVisualController[] visualControllers = FindObjectsByType<ARVisualController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (var vc in visualControllers)
+        {
+            if (vc != null)
+            {
+                vc.SetDefenseMode(true);
+            }
         }
 
         if (UIManager.I != null)
